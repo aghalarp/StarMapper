@@ -174,7 +174,8 @@ public class Application extends Controller {
 //
 //    System.out.println(apiKeyNode);
 
-    JsonNode apiKeyJson = Json.newObject().put("apikey", "fvyuvruptdpybabg");
+    String awsAccessKey = Play.application().configuration().getString("aws.access.key");
+    JsonNode apiKeyJson = Json.newObject().put("apikey", awsAccessKey);
 
 
     //final AstrometryApiHelper apiResponse = new AstrometryApiHelper("fvyuvruptdpybabg");
@@ -198,7 +199,8 @@ public class Application extends Controller {
   }
 
   public static Result testWS3() {
-    AstrometryApiHelper astmSession = new AstrometryApiHelper("fvyuvruptdpybabg");
+    String awsAccessKey = Play.application().configuration().getString("aws.access.key");
+    AstrometryApiHelper astmSession = new AstrometryApiHelper(awsAccessKey);
 
     System.out.println("LoginJsonResponse: " + astmSession.getLoginJsonResponse());
     System.out.println("Session Key: " + astmSession.getSessionKey());
@@ -229,7 +231,8 @@ public class Application extends Controller {
             new F.Function0<String>() {
               public String apply() {
 
-                AstrometryApiHelper astmSession = new AstrometryApiHelper("fvyuvruptdpybabg");
+                String awsAccessKey = Play.application().configuration().getString("aws.access.key");
+                AstrometryApiHelper astmSession = new AstrometryApiHelper(awsAccessKey);
 
                 System.out.println("LoginJsonResponse: " + astmSession.getLoginJsonResponse());
                 System.out.println("Session Key: " + astmSession.getSessionKey());
@@ -268,7 +271,8 @@ public class Application extends Controller {
             new F.Function0<String>() {
               public String apply() {
 
-                AstrometryApiHelper astmSession = new AstrometryApiHelper("fvyuvruptdpybabg");
+                String awsAccessKey = Play.application().configuration().getString("aws.access.key");
+                AstrometryApiHelper astmSession = new AstrometryApiHelper(awsAccessKey);
 
                 System.out.println("LoginJsonResponse: " + astmSession.getLoginJsonResponse());
                 System.out.println("Session Key: " + astmSession.getSessionKey());
@@ -321,7 +325,8 @@ public class Application extends Controller {
 
       // Send to Astrometry API.
       // Login, get API session key.
-      AstrometryApiHelper astmSession = new AstrometryApiHelper("fvyuvruptdpybabg");
+      String awsAccessKey = Play.application().configuration().getString("aws.access.key");
+      AstrometryApiHelper astmSession = new AstrometryApiHelper(awsAccessKey);
       System.out.println("LoginJsonResponse: " + astmSession.getLoginJsonResponse());
       System.out.println("Session Key: " + astmSession.getSessionKey());
 
