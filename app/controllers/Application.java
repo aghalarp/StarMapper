@@ -381,7 +381,6 @@ public class Application extends Controller {
         }
       }
 
-
       return ok("File was uploaded to: " + starMap.getS3imageUrl() + "\n" +
                 "Astrometry Submission ID: " + starMap.getSubmissionId() + "\n" +
                 "Astrometry Job ID: " + starMap.getJobId() + "\n" +
@@ -392,4 +391,16 @@ public class Application extends Controller {
     }
   }
 
+  public static Result SearchStar(String starName) {
+    UserInfo user = Secured.getUserInfo(ctx());
+
+
+    Star star = Star.getStar(starName);
+
+    List<StarMap> starMaps = (star != null) ? star.getStarMaps() : null;
+
+
+    return ok(StarSearch.render("Search Results: " + starName, Secured.isLoggedIn(ctx()), Secured.isAdmin(ctx()),
+            Secured.getUserInfo(ctx()), starMaps, starName));
+  }
 }

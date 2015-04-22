@@ -31,7 +31,7 @@
           <div class="panel-body">
               @for(coord <- starMap.getCoordinates()) {
                 <p>
-                  [StarMap ID: @coord.getStarMap.getId] @coord.getStar().getName() (Star ID: @coord.getStar().getId()) -- xPos: @coord.getX(), yPos: @coord.getY(), radius: @coord.getRadius()
+                  [StarMap ID: @coord.getStarMap.getId] <a href="@routes.Application.SearchStar(coord.getStar().getName())">@coord.getStar().getName()</a> (Star ID: @coord.getStar().getId()) -- xPos: @coord.getX(), yPos: @coord.getY(), radius: @coord.getRadius()
                 </p>
               }
           </div>
