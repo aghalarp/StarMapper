@@ -1,0 +1,32 @@
+body {
+
+}
+
+.header {
+  background: url('../images/header.jpg');
+  background-size: 100% 100%;
+  ba/ckground-position: center;
+  background-repeat: no-repeat;
+  height: 250px;
+}
+
+.navbar {
+  border-radius: 0;
+}
+
+.bio-image {
+  background-size: cover;
+  background-position: center;
+  height: 500px;
+}
+
+.dashboard-submission-images {
+  border: 2px solid #ddd;
+  height: 100px;
+  width: 100px;
+  margin: 0 auto;
+}
+
+.starmap-image {
+  width: 520px;
+}

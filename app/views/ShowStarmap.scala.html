@@ -1,0 +1,42 @@
+@(page: String, isLoggedIn: Boolean, isAdmin: Boolean, userInfo: UserInfo, starMap: StarMap)
+
+@Main(page, isLoggedIn, isAdmin, userInfo) {
+  <script>
+    $(function () {
+      $('[data-toggle="popover"]').popover()
+    })
+  </script>
+
+  <div class="container">
+    <h2>StarMap Data</h2>
+
+    <div class="row">
+
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Image Submission</h3>
+          </div>
+          <div class="panel-body">
+            <img class="starmap-image" src="@starMap.getS3imageUrl" data-container="body" data-toggle="popover" title="<strong>Selected Star</strong>" data-html="true" data-content="<strong>Star Name:</strong> NGC 2024<br /><strong>Constellation:</strong> Orion<br /><strong>Apparent Magnitude:</strong> +2<br /><strong>Distance:</strong> 1325 ly<br /><strong>Wikipedia:</strong> <a href='http://en.wikipedia.org/wiki/Flame_Nebula'>Link</a>" />
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Image Data</h3>
+          </div>
+          <div class="panel-body">
+              @for(coord <- starMap.getCoordinates()) {
+                <p>
+                  [StarMap ID: @coord.getStarMap.getId] @coord.getStar().getName() (Star ID: @coord.getStar().getId()) -- xPos: @coord.getX(), yPos: @coord.getY(), radius: @coord.getRadius()
+                </p>
+              }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
