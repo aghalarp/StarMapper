@@ -38,6 +38,10 @@ public class Application extends Controller {
    * @return The resulting home page.
    */
   public static Result index() {
+    // Redirect logged in users to Dashboard page.
+    if (Secured.isLoggedIn(ctx())) {
+      return redirect(routes.Application.getDashboard());
+    }
 
     return ok(Index.render("Home", Secured.isLoggedIn(ctx()), Secured.isAdmin(ctx()), Secured.getUserInfo(ctx())));
   }
@@ -142,12 +146,28 @@ public class Application extends Controller {
   }
 
   /**
+   * Returns the Public Submissions page.
+   *
+   * @return Dashboard page.
+   */
+  public static Result getPublicSubmissions() {
+    UserInfo user = Secured.getUserInfo(ctx());
+
+    List<StarMap> submissions = StarMap.find().all();
+
+    return ok(PublicSubmissions.render("Public Submissions", Secured.isLoggedIn(ctx()), Secured.isAdmin(ctx()),
+            Secured.getUserInfo(ctx()), submissions));
+  }
+
+  /**
    * Returns the Starmap page.
    *
    * @return Starmap page.
    */
   public static Result getStarmap(Long starmapID) {
     StarMap starMap = StarMap.getStarmap(starmapID);
+
+    //long epoch = System.currentTimeMillis()/1000;
 
     return ok(ShowStarmap.render("ShowStarmap", Secured.isLoggedIn(ctx()), Secured.isAdmin(ctx()),
             Secured.getUserInfo(ctx()), starMap));
@@ -310,7 +330,8 @@ public class Application extends Controller {
       File file = image.getFile(); // Uses ugly file name, i.e. multipartBody5737560692539269893asTemporaryFile
 
       // Create new empty StarMap, generating an ID, which we prepend to the submitted image file name.
-      StarMap starMap = new StarMap(Secured.getUserInfo(ctx()));
+      // If user is not logged in, we create StarMap with the anonymous account (created in Global).
+      StarMap starMap = (Secured.isLoggedIn(ctx())) ? new StarMap(Secured.getUserInfo(ctx())) : new StarMap(UserInfoDB.getUser("anonymous"));
       starMap.save();
 
       // Rename file to make life easier later on.
@@ -325,8 +346,8 @@ public class Application extends Controller {
 
       // Send to Astrometry API.
       // Login, get API session key.
-      String awsAccessKey = Play.application().configuration().getString("aws.access.key");
-      AstrometryApiHelper astmSession = new AstrometryApiHelper(awsAccessKey);
+      String astrometryApiKey = Play.application().configuration().getString("astrometry.api.key");
+      AstrometryApiHelper astmSession = new AstrometryApiHelper(astrometryApiKey);
       System.out.println("LoginJsonResponse: " + astmSession.getLoginJsonResponse());
       System.out.println("Session Key: " + astmSession.getSessionKey());
 
@@ -386,10 +407,8 @@ public class Application extends Controller {
         }
       }
 
-      return ok("File was uploaded to: " + starMap.getS3imageUrl() + "\n" +
-                "Astrometry Submission ID: " + starMap.getSubmissionId() + "\n" +
-                "Astrometry Job ID: " + starMap.getJobId() + "\n" +
-                "Astrometry Image Annotations: " + starMap.getImageAnnotations());
+      return redirect(routes.Application.getStarmap(starMap.getId()));
+
     } else {
       flash("error", "No file was attached.");
       return redirect(routes.Application.index());

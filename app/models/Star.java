@@ -19,6 +19,7 @@ public class Star extends Model {
 
     private String name;
     private String type;
+    private String flatName; //Spaces removed from name.
 
     /**
      * The EBean ORM finder method for database queries on ID.
@@ -37,6 +38,7 @@ public class Star extends Model {
     public Star(String starName, String type) {
         this.name = starName;
         this.type = type;
+        this.flatName = starName.replaceAll("\\s","");
     }
 
 
@@ -93,6 +95,14 @@ public class Star extends Model {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getFlatName() {
+        return flatName;
+    }
+
+    public void setFlatName(String flatName) {
+        this.flatName = flatName;
     }
 
     public List<StarMap> getStarMaps() {

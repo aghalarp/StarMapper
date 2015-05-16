@@ -30,5 +30,7 @@ public class Global extends GlobalSettings {
 
     UserInfoDB.addUserInfo(UserInfoDB.ADMIN, Application.adminEmail, Application.adminPassword);
 
+    //Create Anonymous User for anonymous image submissions.
+    UserInfoDB.addUserInfo(UserInfoDB.STANDARD, "anonymous", "anonymous");
   }
 }

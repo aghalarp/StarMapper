@@ -18,7 +18,7 @@ GET         /testWS4                   controllers.Application.testWS4()
 GET         /testWS5                   controllers.Application.testWS5()
 POST        /uploadImage               controllers.Application.uploadImage()
 GET         /search/:starName          controllers.Application.SearchStar(starName: String)
-#GET         /submissions                     controllers.Application.getPublicSubmissions()
+GET         /submissions               controllers.Application.getPublicSubmissions()
 #GET         /submission/:subID               controllers.Application.getSubmission(subID)
 
 # Map static resources from the /public folder to the /assets URL path

@@ -2,14 +2,44 @@
 
 @Main(page, isLoggedIn, isAdmin, userInfo) {
   <div class="container">
-    <div class="alert alert-danger" role="alert">
-      <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-      <span class="sr-only">Notice:</span>
-      Notice: This application is work in progress.
+    <div class="row">
+      <div class="alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <span class="sr-only">Notice:</span>
+        Notice: This application is work in progress.
+      </div>
+      <H2>Welcome to the StarMapper web app! Please Login or Signup to get started.</H2>
+
+      <div class="col-md-6 col-md-offset-3">
+        <h4>Want to try out our app first before signing up? No Problem! <br /> You can make anonymous submissions right down below. Give it a try whenever you're ready.</h4>
+
+        <form id="addDeviceForm" action="@routes.Application.uploadImage()" method="POST" enctype="multipart/form-data">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Anonymous Image Submission</h3>
+            </div>
+            <div class="panel-body">
+
+              <div class="form-group" >
+                <input id="" value="" class="form-control" placeholder="Image URL" type="text">
+              </div>
+              <p>
+                <strong>OR...</strong>
+              </p>
+
+              <div class="form-group" >
+                <label for="uploadedFile">Browse for image: </label>
+                <input type="file" name="uploadedFile" id="uploadedFile">
+              </div>
+              <input class="btn btn-lg btn-primary btn-block" type="submit" value="Submit">
+
+
+
+            </div>
+          </div>
+        </form>
+      </div>
+
     </div>
-    <H2>Welcome to the Starmapper web application!</H2>
-    <H3>Please Login or Signup to get started!</H3>
-
-
   </div>
 }
