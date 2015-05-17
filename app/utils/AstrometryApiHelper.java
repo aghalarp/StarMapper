@@ -147,8 +147,8 @@ public class AstrometryApiHelper {
         //Manually create multipart/form-data POST request body because current version of Play doesn't support it...
         //Got most information from here: http://www.w3.org/TR/html401/interact/forms.html#h-17.13.4.2
         //https://www.ietf.org/rfc/rfc2388.txt
-        String outputFilePath = Play.application().path().getPath() + "/app/utils/tempPostRequestBody.dat";
-        File tempPostRequestBodyFile = new File(outputFilePath); //We'll delete this temp file after we submit post request.
+        //String outputFilePath = Play.application().path().getPath() + "/app/utils/tempPostRequestBody.dat";
+        File tempPostRequestBodyFile = new File("tempPostRequestBody.dat"); //We'll delete this temp file after we submit post request.
 
         //Because we're working with multipart/form-data, we need to create an output stream containing both
         //character and binary data. To accomplish this, we use a regular OutputStream as well as a OutputStreamWriter.
