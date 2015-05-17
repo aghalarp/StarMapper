@@ -14,7 +14,6 @@ dist
 /RUNNING_PID
 /.settings
 /.target
-conf/evolutions
 *DS_Store
 /.eclipse
 /projectFilesBackup
