@@ -93,7 +93,7 @@ public class AstrometryApiHelper {
         //Wait up to 10 seconds for the promise to get the (json) result.
         //This is kind of bad, as it goes against the asynchronous nature of Promises.
         //But we need to get this response before we can do other api calls.
-        jsonPromise.get(15000);
+        jsonPromise.get(60000);
     }
 
     /**
@@ -130,7 +130,7 @@ public class AstrometryApiHelper {
         //Wait up to 10 seconds for the promise to get the (json) result.
         //This is kind of bad, as it goes against the asynchronous nature of Promises.
         //But we need to get this response before we can do other api calls.
-        JsonNode jsonResponse = jsonPromise.get(15000);
+        JsonNode jsonResponse = jsonPromise.get(60000);
 
         // If login was successful, return generated session key. Otherwise, return null indicating failure.
         return jsonResponse.findPath("status").asText().equals("success") ? jsonResponse.findPath("session").asText() : null;
@@ -214,7 +214,7 @@ public class AstrometryApiHelper {
         //Wait up to 10 seconds for the promise to get the (json) result.
         //This is kind of bad, as it goes against the asynchronous nature of Promises.
         //But we need to get this response before we can do other api calls.
-        jsonPromise.get(15000);
+        jsonPromise.get(60000);
 
         tempPostRequestBodyFile.delete(); //Delete the tempPostRequestBody.dat file after we're done with it.
     }
@@ -264,7 +264,7 @@ public class AstrometryApiHelper {
             //Wait up to 10 seconds for the promise to get the (json) result.
             //This is kind of bad, as it goes against the asynchronous nature of Promises.
             //But we need to get this response before we can do other api calls.
-            jsonPromise.get(15000);
+            jsonPromise.get(60000);
 
             // Wait 5 seconds before the next API call so we don't spam their servers.
             try {
@@ -275,6 +275,10 @@ public class AstrometryApiHelper {
         }
     }
 
+    /**
+     * Repeatedly checks Astrometry job status until success or failure.
+     *
+     */
     public void checkJobStatusUntilDone() {
         // Job status can only be: success, failure, or solving. We keep looping until job is done or has failed.
         while (this.jobStatus == null || this.jobStatus.isEmpty() || this.jobStatus.equals("solving")) {
@@ -338,7 +342,7 @@ public class AstrometryApiHelper {
         //Wait up to 10 seconds for the promise to get the (json) result.
         //This is kind of bad, as it goes against the asynchronous nature of Promises.
         //But we need to get this response before we can do other api calls.
-        JsonNode jsonResponse = jsonPromise.get(15000);
+        JsonNode jsonResponse = jsonPromise.get(60000);
 
         return jsonResponse.findPath("status").asText();
     }
@@ -381,7 +385,7 @@ public class AstrometryApiHelper {
         //Wait up to 10 seconds for the promise to get the (json) result.
         //This is kind of bad, as it goes against the asynchronous nature of Promises.
         //But we need to get this response before we can do other api calls.
-        jsonPromise.get(15000);
+        jsonPromise.get(60000);
 
     }
 

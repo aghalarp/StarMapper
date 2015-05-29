@@ -1,12 +1,19 @@
 package controllers;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import models.*;
+import org.apache.commons.io.FileUtils;
 import play.Play;
+import play.data.DynamicForm;
 import play.data.Form;
 import play.libs.F;
 import play.libs.Json;
@@ -20,6 +27,10 @@ import views.formdata.*;
 import views.html.*;
 
 import play.libs.WS;
+
+
+import javax.imageio.ImageIO;
+
 import static play.libs.F.Function;
 import static play.libs.F.Promise;
 
@@ -321,14 +332,50 @@ public class Application extends Controller {
   }
 
   public static Result uploadImage() {
+    // Get image file
     Http.MultipartFormData body = request().body().asMultipartFormData();
     Http.MultipartFormData.FilePart image = body.getFile("uploadedFile"); //"uploadedFile" refers to the form field name.
 
-    if (image != null) {
-      String fileName = image.getFilename();
-      String contentType = image.getContentType();
-      File file = image.getFile(); // Uses ugly file name, i.e. multipartBody5737560692539269893asTemporaryFile
+    // Get form image url
+    DynamicForm requestData = Form.form().bindFromRequest();
+    String formImageUrl = requestData.get("image_url");
 
+    String fileName = "";
+    File file = null;
+
+    if (!formImageUrl.isEmpty()) {
+      try {
+        URL url = new URL(formImageUrl);
+        fileName = url.getFile();
+        fileName = fileName.substring(fileName.lastIndexOf('/') + 1).split("\\?")[0].split("#")[0]; // Gets actual filename instead of entire file path (from getFile()).
+
+        // Change from Java user-agent to a browser user agent. Otherwise will not be able to get image properly.
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31");
+
+        BufferedImage urlImage = ImageIO.read(connection.getInputStream());
+        file = new File(fileName);
+
+        // Test that file is a valid image. (DO THIS FOR browsed images too)
+        if (ImageIO.read(file) == null) {
+          flash("error", "URL not a valid image. Please try again.");
+          return redirect(routes.Application.index());
+        }
+
+        System.out.println("FileName string: " + fileName);
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    else if (image != null) {
+      fileName = image.getFilename();
+      file = image.getFile(); // Uses ugly file name, i.e. multipartBody5737560692539269893asTemporaryFile
+      System.out.println("FileName string 2: " + fileName);
+    }
+
+    if (image != null || !formImageUrl.isEmpty()) {
       // Create new empty StarMap, generating an ID, which we prepend to the submitted image file name.
       // If user is not logged in, we create StarMap with the anonymous account (created in Global).
       StarMap starMap = (Secured.isLoggedIn(ctx())) ? new StarMap(Secured.getUserInfo(ctx())) : new StarMap(UserInfoDB.getUser("anonymous"));
