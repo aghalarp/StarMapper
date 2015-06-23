@@ -13,8 +13,8 @@
           </div>
           <div class="panel-body" style="padding: 0px;">
             <canvas width='1' height='1' style="vertical-align: bottom;"></canvas>
-            <img class="starmap-image" src="@starMap.getS3imageUrl" data-container="body" data-toggle="popover" title="<strong>Selected Star</strong>" data-html="true" data-content="<strong>Star Name:</strong> NGC 2024<br /><strong>Constellation:</strong> Orion<br /><strong>Apparent Magnitude:</strong> +2<br /><strong>Distance:</strong> 1325 ly<br /><strong>Wikipedia:</strong> <a href='http://en.wikipedia.org/wiki/Flame_Nebula'>Link</a>" />
-            <span id="canvasPopover" data-toggle="popover" data-html="true" data-content="lorem ipsum content" data-original-title="<strong>Selected Star</strong>"></span>
+            <img class="starmap-image" src="@starMap.getS3imageUrl" />
+            <a id="canvasPopover" tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-html="true" data-content="lorem ipsum content" data-original-title="<strong>Selected Star</strong>"></a>
           </div>
         </div>
       </div>
@@ -36,10 +36,6 @@
   </div>
 
   <script>
-    $(function () {
-      $('[data-toggle="popover"]').popover()
-    });
-
 
     // Get image dimensions. Reason for this extra code is because had an issue where wasn't able to get
     // cached image sizes. jQuery fires before event handler was bound.
@@ -75,59 +71,67 @@
         width: scaledImgWidth
       });
 
-    // Run the arc() function after the image has loaded
-    function drawBackground() {
-      $ ( 'canvas' ).drawImage ( {
-        layer: true,
-        name: 'bgImg',
-        source : ' @starMap.getS3imageUrl ',
-        x : scaledImgWidth / 2,
-        y : scaledImgHeight / 2,
-        width : scaledImgWidth,
-        height : scaledImgHeight,
-        //load : arc
-      } ) ;
-    }
-
-    drawBackground();
-
-    // Function for drawing an arc
-    function arc (xPos, yPos, radius, starName, searchUrl) {
-      if (radius == 0) {
-        radius = 15;
-      }
-      else if (radius > 50) {
-        radius = 50;
+      // Draw the StarMap background image.
+      function drawBackground() {
+        $ ( 'canvas' ).drawImage ( {
+          layer: true,
+          name: 'bgImg',
+          source : ' @starMap.getS3imageUrl ',
+          x : scaledImgWidth / 2,
+          y : scaledImgHeight / 2,
+          width : scaledImgWidth,
+          height : scaledImgHeight,
+          click: function() {
+            // Dismiss popover when canvas background is clicked.
+            // Data-trigger: focus doesn't work for dismissing popovers, so we do this instead.
+            $("#canvasPopover" ).popover({
+              placement:'left' // Fixes bug where popover defaults to right placement if user clicks background first.
+            }).popover('hide');
+          }
+        } ) ;
       }
 
-      $('canvas').drawEllipse({
-        layer: true,
-        name: starName,
-        strokeStyle: '#6f9',
-        strokeWidth: 3,
-        x: xPos*xScale, y: yPos*yScale,
-        width: radius,
-        height: radius,
-        click: function(layer) {
-          //Get click coordinates.
-          var distX, distY;
-          distX = layer.x;
-          distY = layer.y;
+      drawBackground();
 
-          //Then we change the Bootstrap popover span properties for the given star.
-          $("#canvasPopover").css({'position':'relative','top':distY,'left':distX})
-            .attr("data-content", "<strong>Star Name: </strong><a href='" + searchUrl +"'>" + starName + "</a><br /><strong>Constellation:</strong> null<br /><strong>Apparent Magnitude:</strong> null<br /><strong>Distance:</strong> null<br /><strong>Wikipedia:</strong> <a href='#'>Link</a>")
-            .popover({
-              trigger: 'click',
-              placement:'right',
-            }).popover('show');
+      // Function for drawing an arc
+      function arc (xPos, yPos, radius, starName, searchUrl) {
+        if (radius == 0) {
+          radius = 15;
         }
-      });
-    }
+        else if (radius > 50) {
+          radius = 50;
+        }
 
-    @for(coord <- starMap.getCoordinates()) {
-      arc(@coord.getX(), @coord.getY(), @coord.getRadius(), "@coord.getStar().getName()", "@routes.Application.SearchStar(coord.getStar.getName)");
-    }
+
+        $('canvas').drawEllipse({
+          layer: true,
+          name: starName,
+          strokeStyle: '#6f9',
+          strokeWidth: 3,
+          x: xPos*xScale, y: yPos*yScale,
+          width: radius,
+          height: radius,
+          click: function(layer) {
+            //Get click coordinates.
+            var distX, distY;
+            distX = layer.x;
+            distY = layer.y;
+
+            //Then we change the Bootstrap popover span properties for the given star.
+            $("#canvasPopover").css({'position':'relative','top':distY,'left':distX})
+              .attr("data-content", "<strong>Star Name: </strong><a href='" + searchUrl +"'>" + starName + "</a><br /><strong>Constellation:</strong> null<br /><strong>Apparent Magnitude:</strong> null<br /><strong>Distance:</strong> null<br /><strong>Wikipedia:</strong> <a href='#'>Link</a>")
+              .attr("tabindex", "0")
+              .popover({
+                placement:'left',
+              }).popover('show');
+          }
+        });
+      }
+
+      // Finally, draw circles for each identified star!
+      @for(coord <- starMap.getCoordinates()) {
+        arc(@coord.getX(), @coord.getY(), @coord.getRadius(), "@coord.getStar().getName()", "@routes.Application.SearchStar(coord.getStar.getName)");
+      }
 
     }).each(function() {
       if(this.complete) {

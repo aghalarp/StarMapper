@@ -205,8 +205,8 @@ public class Application extends Controller {
 //
 //    System.out.println(apiKeyNode);
 
-    String awsAccessKey = Play.application().configuration().getString("aws.access.key");
-    JsonNode apiKeyJson = Json.newObject().put("apikey", awsAccessKey);
+    String astrometryApiKey = Play.application().configuration().getString("astrometry.api.key");
+    JsonNode apiKeyJson = Json.newObject().put("apikey", astrometryApiKey);
 
 
     //final AstrometryApiHelper apiResponse = new AstrometryApiHelper("fvyuvruptdpybabg");
@@ -219,6 +219,7 @@ public class Application extends Controller {
           //apiResponse.setApiKeyResponse(response.asJson());
           //System.out.println(apiResponse.getApiKeyResponse());
          // return ok(apiResponse.getApiKeyResponse());
+          System.out.println("Inside Promise");
           return ok("From Result:" + response.asJson());
         }
       }
@@ -226,6 +227,7 @@ public class Application extends Controller {
 
     //System.out.println(apiResponse.getApiKeyResponse());
     //System.out.println(apiResponse.getApiKeyResponse().get(1000));
+    System.out.println("Outside Promise");
     return resultPromise;
   }
 
