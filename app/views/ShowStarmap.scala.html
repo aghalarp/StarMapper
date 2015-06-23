@@ -75,6 +75,7 @@
       function drawBackground() {
         $ ( 'canvas' ).drawImage ( {
           layer: true,
+          index: 0, // Doesn't support negative index, which is why we add +1 for layerIndex var inside arc function later.
           name: 'bgImg',
           source : ' @starMap.getS3imageUrl ',
           x : scaledImgWidth / 2,
@@ -88,7 +89,7 @@
               placement:'left' // Fixes bug where popover defaults to right placement if user clicks background first.
             }).popover('hide');
           }
-        } ) ;
+        });
       }
 
       drawBackground();
@@ -102,9 +103,13 @@
           radius = 50;
         }
 
+        // Smaller circle radius should have larger index value so that in the case of overlapping circles,
+        // the smaller circle will be clickable.
+        var layerIndex = Math.abs(radius - 50) + 1; // +1 needed because background image is index 0.
 
         $('canvas').drawEllipse({
           layer: true,
+          index: layerIndex,
           name: starName,
           strokeStyle: '#6f9',
           strokeWidth: 3,
