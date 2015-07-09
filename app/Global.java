@@ -1,7 +1,11 @@
+import actors.AstrometryActor;
+import akka.actor.ActorRef;
+import akka.actor.Props;
 import models.UserInfoDB;
 import controllers.Application;
 import play.GlobalSettings;
 import play.Play;
+import play.libs.Akka;
 
 /**
  * Provides initialization code for the DiveTableApp application.
@@ -32,5 +36,10 @@ public class Global extends GlobalSettings {
 
     //Create Anonymous User for anonymous image submissions.
     UserInfoDB.addUserInfo(UserInfoDB.STANDARD, "anonymous", "anonymous");
+
+    // Create Astrometry actor to handle all submissions.
+    ActorRef astrometryActor = Akka.system().actorOf(Props.create(AstrometryActor.class), "astrometryActor");
+
+
   }
 }

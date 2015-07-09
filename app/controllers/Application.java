@@ -9,12 +9,16 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
 
+import actors.messages.AstLoginKey;
+import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import com.fasterxml.jackson.databind.JsonNode;
 import models.*;
 import org.apache.commons.io.FileUtils;
 import play.Play;
 import play.data.DynamicForm;
 import play.data.Form;
+import play.libs.Akka;
 import play.libs.F;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -219,16 +223,65 @@ public class Application extends Controller {
           //apiResponse.setApiKeyResponse(response.asJson());
           //System.out.println(apiResponse.getApiKeyResponse());
          // return ok(apiResponse.getApiKeyResponse());
-          System.out.println("Inside Promise");
-          return ok("From Result:" + response.asJson());
+          try {
+            Thread.sleep(5000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+
+          System.out.println("Inside Promise: " + System.nanoTime());
+
+          return ok("From Result:" + response.asJson() + "\n" + System.nanoTime());
         }
       }
     );
 
     //System.out.println(apiResponse.getApiKeyResponse());
     //System.out.println(apiResponse.getApiKeyResponse().get(1000));
-    System.out.println("Outside Promise");
+    System.out.println("Outside Promise: " + System.nanoTime());
     return resultPromise;
+  }
+
+  public static Result testWS2a() {
+
+
+//    ObjectMapper mapper = new ObjectMapper();
+//    JsonNode apiKeyNode = mapper.createObjectNode(); // will be of type ObjectNode
+//    ((ObjectNode) apiKeyNode).put("apikey", "fvyuvruptdpybabg");
+//
+//    System.out.println(apiKeyNode);
+
+    String astrometryApiKey = Play.application().configuration().getString("astrometry.api.key");
+    JsonNode apiKeyJson = Json.newObject().put("apikey", astrometryApiKey);
+
+
+    //final AstrometryApiHelper apiResponse = new AstrometryApiHelper("fvyuvruptdpybabg");
+
+
+    final Promise<Result> resultPromise = WS.url("http://nova.astrometry.net/api/login").setContentType("application/x-www-form-urlencoded").post("request-json=" + apiKeyJson).map(
+            new Function<WS.Response, Result>() {
+              Function<WS.Response, Result> thisFunc = this; //Create reference to this instance
+              public Result apply(WS.Response response) {
+                //apiResponse.setApiKeyResponse(response.asJson());
+                //System.out.println(apiResponse.getApiKeyResponse());
+                // return ok(apiResponse.getApiKeyResponse());
+                try {
+                  Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                  e.printStackTrace();
+                }
+
+                System.out.println("Inside Promise: " + System.nanoTime());
+
+                return ok("From Result:" + response.asJson() + "\n" + System.nanoTime());
+              }
+            }
+    );
+
+    //System.out.println(apiResponse.getApiKeyResponse());
+    //System.out.println(apiResponse.getApiKeyResponse().get(1000));
+    System.out.println("Outside Promise: " + System.nanoTime());
+    return ok("Regular Result: " + System.nanoTime());
   }
 
   public static Result testWS3() {
@@ -475,5 +528,19 @@ public class Application extends Controller {
 
     return ok(StarSearch.render("Search Results: " + starName, Secured.isLoggedIn(ctx()), Secured.isAdmin(ctx()),
             Secured.getUserInfo(ctx()), starMaps, starName));
+  }
+
+  public static Result testAkka() {
+    String astrometryApiKey = Play.application().configuration().getString("astrometry.api.key");
+    AstLoginKey loginKey = new AstLoginKey(astrometryApiKey);
+
+    // This old version of Akka doesn't have an easy way to get an ActorRef from ActorSelection
+    // We can still safely tell() to the ActorSelection as long as we only create one actor, but once we upgrade
+    // the framework, use the resolveOne() method to get an ActorRef and use that instead.
+    ActorSelection actor = Akka.system().actorSelection("/user/astrometryActor");
+    actor.tell(loginKey);
+
+
+    return ok("Done!");
   }
 }
