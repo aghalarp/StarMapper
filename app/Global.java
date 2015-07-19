@@ -1,4 +1,5 @@
 import actors.AstrometryActor;
+import actors.StarmapSubmissionActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import models.UserInfoDB;
@@ -37,9 +38,7 @@ public class Global extends GlobalSettings {
     //Create Anonymous User for anonymous image submissions.
     UserInfoDB.addUserInfo(UserInfoDB.STANDARD, "anonymous", "anonymous");
 
-    // Create Astrometry actor to handle all submissions.
-    ActorRef astrometryActor = Akka.system().actorOf(Props.create(AstrometryActor.class), "astrometryActor");
-
-
+    // Create Submission actor to handle all submissions.
+    ActorRef starmapSubmissionActor = Akka.system().actorOf(Props.create(StarmapSubmissionActor.class), "starmapSubmissionActor");
   }
 }

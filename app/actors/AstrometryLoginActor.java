@@ -2,6 +2,7 @@ package actors;
 
 import actors.messages.AstLoginKey;
 import akka.actor.ActorRef;
+import akka.actor.Status;
 import akka.actor.UntypedActor;
 import akka.dispatch.Mapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,8 +17,11 @@ import scala.concurrent.Future;
 /**
  * Created by David on 7/6/15.
  */
-public class AstLoginActor extends UntypedActor {
+public class AstrometryLoginActor extends UntypedActor {
 
+    public AstrometryLoginActor() {
+        Logger.info("Starting AstrometryLoginActor");
+    }
 
     @Override
     public void onReceive(Object message) {
@@ -28,27 +32,32 @@ public class AstLoginActor extends UntypedActor {
             // Self reference here might not be needed, but I do it just in case. Need to look into this further.
             final ActorRef self = getSelf();
 
-            AstLoginKey loginKey = (AstLoginKey) message;
+            final AstLoginKey loginKey = (AstLoginKey) message;
             //Future<JsonNode> jsonResult = login(loginKey);
             //getSender().tell(jsonResult, getSelf());
 
-            Future<WS.Response> wsResponse = login2(loginKey);
-
-
+            final Future<WS.Response> wsResponse = login2(loginKey);
 
             wsResponse.map(new Mapper<WS.Response, JsonNode>() {
                 @Override
                 public JsonNode apply(WS.Response response) {
+                    // Json response looks something like this:
+                    // {"status":"success","message":"authenticated user: ","session":"elowv64c6mh69ru6ryhwu4y1xs2hdsx0"}
                     JsonNode json = response.asJson();
 
+
                     if (json.findPath("status").asText().equals("success")) {
-                        Logger.debug("Login Successful! Response: " + json);
+                        String sessionKey = json.findPath("session").asText();
+                        Logger.debug("[AstrometryLoginActor] - Login Successful! Response: " + json);
+                        sender.tell(sessionKey, self);
                     } else {
-                        Logger.debug("Login Failed! Response: " + json);
+                        Logger.debug("[AstrometryLoginActor] - Login Failed! Response: " + json);
+                        Exception ex = new RuntimeException("Login failed.");
+                        sender.tell(new Status.Failure(ex), self);
+                        // Do we need to actually throw ex in this case?
                     }
 
-                    //return json;
-                    sender.tell(json, self);
+                    // This return doesn't matter. Maybe change Mapper to something else...
                     return json;
                 }
             }, Akka.system().dispatcher());

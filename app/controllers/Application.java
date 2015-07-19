@@ -7,9 +7,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import actors.messages.AstLoginKey;
+import actors.messages.StarmapSubmission;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -156,6 +159,16 @@ public class Application extends Controller {
 
     List<StarMap> submissions = user.getStarmaps();
 
+    Comparator<StarMap> descByIdComparator = new Comparator<StarMap>() {
+      @Override
+      public int compare(StarMap o1, StarMap o2) {
+        Long comp = o2.getId() - o1.getId();
+        return comp.intValue(); // Can cause overflow here if the Long happens to be bigger than max int.
+      }
+    };
+
+    Collections.sort(submissions, descByIdComparator);
+
     return ok(Dashboard.render("User Dashboard", Secured.isLoggedIn(ctx()), Secured.isAdmin(ctx()),
             Secured.getUserInfo(ctx()), submissions));
   }
@@ -169,6 +182,16 @@ public class Application extends Controller {
     UserInfo user = Secured.getUserInfo(ctx());
 
     List<StarMap> submissions = StarMap.find().all();
+
+    Comparator<StarMap> descByIdComparator = new Comparator<StarMap>() {
+      @Override
+      public int compare(StarMap o1, StarMap o2) {
+        Long comp = o2.getId() - o1.getId();
+        return comp.intValue(); // Can cause overflow here if the Long happens to be bigger than max int.
+      }
+    };
+
+    Collections.sort(submissions, descByIdComparator);
 
     return ok(PublicSubmissions.render("Public Submissions", Secured.isLoggedIn(ctx()), Secured.isAdmin(ctx()),
             Secured.getUserInfo(ctx()), submissions));
@@ -188,204 +211,6 @@ public class Application extends Controller {
             Secured.getUserInfo(ctx()), starMap));
   }
 
-
-  public static Promise<Result> testWS() {
-    final Promise<Result> resultPromise = WS.url("http://www.mocky.io/v2/5185415ba171ea3a00704eed").get().map(
-            new Function<WS.Response, Result>() {
-              public Result apply(WS.Response response) {
-                return ok("Feed title:" + response.asJson().findPath("hello"));
-              }
-            }
-    );
-    return resultPromise;
-  }
-
-  public static Promise<Result> testWS2() {
-
-
-//    ObjectMapper mapper = new ObjectMapper();
-//    JsonNode apiKeyNode = mapper.createObjectNode(); // will be of type ObjectNode
-//    ((ObjectNode) apiKeyNode).put("apikey", "fvyuvruptdpybabg");
-//
-//    System.out.println(apiKeyNode);
-
-    String astrometryApiKey = Play.application().configuration().getString("astrometry.api.key");
-    JsonNode apiKeyJson = Json.newObject().put("apikey", astrometryApiKey);
-
-
-    //final AstrometryApiHelper apiResponse = new AstrometryApiHelper("fvyuvruptdpybabg");
-
-
-    final Promise<Result> resultPromise = WS.url("http://nova.astrometry.net/api/login").setContentType("application/x-www-form-urlencoded").post("request-json=" + apiKeyJson).map(
-      new Function<WS.Response, Result>() {
-        Function<WS.Response, Result> thisFunc = this; //Create reference to this instance
-        public Result apply(WS.Response response) {
-          //apiResponse.setApiKeyResponse(response.asJson());
-          //System.out.println(apiResponse.getApiKeyResponse());
-         // return ok(apiResponse.getApiKeyResponse());
-          try {
-            Thread.sleep(5000);
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-          }
-
-          System.out.println("Inside Promise: " + System.nanoTime());
-
-          return ok("From Result:" + response.asJson() + "\n" + System.nanoTime());
-        }
-      }
-    );
-
-    //System.out.println(apiResponse.getApiKeyResponse());
-    //System.out.println(apiResponse.getApiKeyResponse().get(1000));
-    System.out.println("Outside Promise: " + System.nanoTime());
-    return resultPromise;
-  }
-
-  public static Result testWS2a() {
-
-
-//    ObjectMapper mapper = new ObjectMapper();
-//    JsonNode apiKeyNode = mapper.createObjectNode(); // will be of type ObjectNode
-//    ((ObjectNode) apiKeyNode).put("apikey", "fvyuvruptdpybabg");
-//
-//    System.out.println(apiKeyNode);
-
-    String astrometryApiKey = Play.application().configuration().getString("astrometry.api.key");
-    JsonNode apiKeyJson = Json.newObject().put("apikey", astrometryApiKey);
-
-
-    //final AstrometryApiHelper apiResponse = new AstrometryApiHelper("fvyuvruptdpybabg");
-
-
-    final Promise<Result> resultPromise = WS.url("http://nova.astrometry.net/api/login").setContentType("application/x-www-form-urlencoded").post("request-json=" + apiKeyJson).map(
-            new Function<WS.Response, Result>() {
-              Function<WS.Response, Result> thisFunc = this; //Create reference to this instance
-              public Result apply(WS.Response response) {
-                //apiResponse.setApiKeyResponse(response.asJson());
-                //System.out.println(apiResponse.getApiKeyResponse());
-                // return ok(apiResponse.getApiKeyResponse());
-                try {
-                  Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                  e.printStackTrace();
-                }
-
-                System.out.println("Inside Promise: " + System.nanoTime());
-
-                return ok("From Result:" + response.asJson() + "\n" + System.nanoTime());
-              }
-            }
-    );
-
-    //System.out.println(apiResponse.getApiKeyResponse());
-    //System.out.println(apiResponse.getApiKeyResponse().get(1000));
-    System.out.println("Outside Promise: " + System.nanoTime());
-    return ok("Regular Result: " + System.nanoTime());
-  }
-
-  public static Result testWS3() {
-    String awsAccessKey = Play.application().configuration().getString("aws.access.key");
-    AstrometryApiHelper astmSession = new AstrometryApiHelper(awsAccessKey);
-
-    System.out.println("LoginJsonResponse: " + astmSession.getLoginJsonResponse());
-    System.out.println("Session Key: " + astmSession.getSessionKey());
-
-    File image = Play.application().getFile("/public/images/night-sky.jpg");
-
-    try {
-      astmSession.submitImage(image);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    System.out.println("ImageSubmissionResponse: " + astmSession.getImageSubmissionJsonResponse());
-    System.out.println("Submission ID: " + astmSession.getSubmissionId());
-
-    astmSession.fetchJobId();
-
-    System.out.println("SubmissionIdResponse: " + astmSession.getSubmissionIdJsonResponse());
-    System.out.println("Job ID: " + astmSession.getJobId());
-
-
-
-    return ok("Job ID: " + astmSession.getJobId());
-  }
-
-  public static Promise<Result> testWS4() {
-    Promise<String> promiseOfInt = Promise.promise(
-            new F.Function0<String>() {
-              public String apply() {
-
-                String awsAccessKey = Play.application().configuration().getString("aws.access.key");
-                AstrometryApiHelper astmSession = new AstrometryApiHelper(awsAccessKey);
-
-                System.out.println("LoginJsonResponse: " + astmSession.getLoginJsonResponse());
-                System.out.println("Session Key: " + astmSession.getSessionKey());
-
-                File image = Play.application().getFile("/public/images/night-sky.jpg");
-                try {
-                  astmSession.submitImage(image);
-                } catch (IOException e) {
-                  e.printStackTrace();
-                }
-
-                System.out.println("ImageSubmissionResponse: " + astmSession.getImageSubmissionJsonResponse());
-                System.out.println("Submission ID: " + astmSession.getSubmissionId());
-
-                astmSession.fetchJobId();
-
-                System.out.println("SubmissionIdResponse: " + astmSession.getSubmissionIdJsonResponse());
-                System.out.println("Job ID: " + astmSession.getJobId());
-
-                return astmSession.getJobId();
-              }
-            }
-    );
-    return promiseOfInt.map(
-            new Function<String, Result>() {
-              public Result apply(String jobId) {
-                return ok("Job ID: " + jobId);
-              }
-            }
-    );
-
-  }
-
-  public static Result testWS5() {
-    Promise<String> promiseOfInt = Promise.promise(
-            new F.Function0<String>() {
-              public String apply() {
-
-                String awsAccessKey = Play.application().configuration().getString("aws.access.key");
-                AstrometryApiHelper astmSession = new AstrometryApiHelper(awsAccessKey);
-
-                System.out.println("LoginJsonResponse: " + astmSession.getLoginJsonResponse());
-                System.out.println("Session Key: " + astmSession.getSessionKey());
-
-                File image = Play.application().getFile("/public/images/night-sky.jpg");
-                try {
-                  astmSession.submitImage(image);
-                } catch (IOException e) {
-                  e.printStackTrace();
-                }
-
-                System.out.println("ImageSubmissionResponse: " + astmSession.getImageSubmissionJsonResponse());
-                System.out.println("Submission ID: " + astmSession.getSubmissionId());
-
-                astmSession.fetchJobId();
-
-                System.out.println("SubmissionIdResponse: " + astmSession.getSubmissionIdJsonResponse());
-                System.out.println("Job ID: " + astmSession.getJobId());
-
-                return astmSession.getJobId();
-              }
-            }
-    );
-
-    return ok("Hi");
-  }
-
   public static Result uploadImage() {
     // Get image file
     Http.MultipartFormData body = request().body().asMultipartFormData();
@@ -398,6 +223,7 @@ public class Application extends Controller {
     String fileName = "";
     File file = null;
 
+    // First check if user submitted URL.
     if (!formImageUrl.isEmpty()) {
       try {
         URL url = new URL(formImageUrl);
@@ -410,6 +236,9 @@ public class Application extends Controller {
 
         BufferedImage urlImage = ImageIO.read(connection.getInputStream());
         file = new File(fileName);
+        String fileExtension = formImageUrl.substring(formImageUrl.lastIndexOf(".") + 1);
+        ImageIO.write(urlImage, fileExtension, file);
+        file.deleteOnExit();
 
         // Test that file is a valid image. (DO THIS FOR browsed images too)
         if (ImageIO.read(file) == null) {
@@ -424,12 +253,13 @@ public class Application extends Controller {
         e.printStackTrace();
       }
     }
+    // Otherwise check if user submitted local image.
     else if (image != null) {
       fileName = image.getFilename();
       file = image.getFile(); // Uses ugly file name, i.e. multipartBody5737560692539269893asTemporaryFile
-      System.out.println("FileName string 2: " + fileName);
     }
 
+    // If user did indeed submit either URL or local image, we continue the submission process.
     if (image != null || !formImageUrl.isEmpty()) {
       // Create new empty StarMap, generating an ID, which we prepend to the submitted image file name.
       // If user is not logged in, we create StarMap with the anonymous account (created in Global).
@@ -542,5 +372,80 @@ public class Application extends Controller {
 
 
     return ok("Done!");
+  }
+
+  public static Result starmapSubmissionAkka() {
+
+    // Get image file
+    Http.MultipartFormData body = request().body().asMultipartFormData();
+    Http.MultipartFormData.FilePart image = body.getFile("uploadedFile"); //"uploadedFile" refers to the form field name.
+
+    // Get form image url
+    DynamicForm requestData = Form.form().bindFromRequest();
+    String formImageUrl = requestData.get("image_url");
+
+    String fileName = "";
+    File file = null;
+
+    // First check if user submitted URL.
+    if (!formImageUrl.isEmpty()) {
+      try {
+        URL url = new URL(formImageUrl);
+        fileName = url.getFile();
+        fileName = fileName.substring(fileName.lastIndexOf('/') + 1).split("\\?")[0].split("#")[0]; // Gets actual filename instead of entire file path (from getFile()).
+
+        // Change from Java user-agent to a browser user agent. Otherwise will not be able to get image properly.
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31");
+
+        BufferedImage urlImage = ImageIO.read(connection.getInputStream());
+        file = new File(fileName);
+        String fileExtension = formImageUrl.substring(formImageUrl.lastIndexOf(".") + 1);
+        ImageIO.write(urlImage, fileExtension, file);
+        file.deleteOnExit();
+
+        // Test that file is a valid image. (DO THIS FOR browsed images too)
+        if (ImageIO.read(file) == null) {
+          flash("error", "URL not a valid image. Please try again.");
+          return redirect(routes.Application.index());
+        }
+
+        System.out.println("FileName string: " + fileName);
+      } catch (MalformedURLException e) {
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    // Otherwise check if user submitted local image.
+    else if (image != null) {
+      fileName = image.getFilename();
+      file = image.getFile(); // Uses ugly file name, i.e. multipartBody5737560692539269893asTemporaryFile
+    }
+
+    // If user did indeed submit either URL or local image, we continue the submission process.
+    if (image != null || !formImageUrl.isEmpty()) {
+
+      UserInfo user = (Secured.isLoggedIn(ctx())) ? Secured.getUserInfo(ctx()) : UserInfoDB.getUser("anonymous");
+      String astrometryApiKey = Play.application().configuration().getString("astrometry.api.key");
+
+      StarmapSubmission submission = new StarmapSubmission(user, astrometryApiKey, file, fileName);
+
+      // This old version of Akka doesn't have an easy way to get an ActorRef from ActorSelection
+      // We can still safely tell() to the ActorSelection as long as we only create one actor, but once we upgrade
+      // the framework, use the resolveOne() method to get an ActorRef and use that instead.
+      ActorSelection actor = Akka.system().actorSelection("/user/starmapSubmissionActor");
+      actor.tell(submission);
+
+      if (Secured.isLoggedIn(ctx())) {
+        return redirect(routes.Application.getDashboard());
+      } else {
+        return redirect(routes.Application.getPublicSubmissions());
+      }
+
+    } else {
+      flash("error", "No file was attached.");
+      return redirect(routes.Application.index());
+    }
   }
 }
