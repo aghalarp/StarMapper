@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by David on 7/17/15.
+ * Actor responsible for retrieving image annotation data from Astrometry.
  */
 public class AstrometryAnnotationsActor extends UntypedActor {
     private final ActorRef databaseActor;

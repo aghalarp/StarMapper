@@ -13,7 +13,7 @@ import utils.AwsS3Utils;
 import java.io.File;
 
 /**
- * Created by David on 7/10/15.
+ * Actor responsible for uploading images to Amazon AWS S3.
  */
 public class AwsUploadActor extends UntypedActor {
 
@@ -48,6 +48,9 @@ public class AwsUploadActor extends UntypedActor {
                     }
                 }
             }, Akka.system().dispatcher());
+        } else {
+            unhandled(message);
         }
+
     }
 }

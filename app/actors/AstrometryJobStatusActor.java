@@ -20,7 +20,7 @@ import scala.concurrent.duration.Duration;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by David on 7/16/15.
+ * Actor responsible for polling Astrometry for job status information.
  */
 public class AstrometryJobStatusActor extends UntypedActor {
     private final ActorRef annotationsActor;

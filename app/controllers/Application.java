@@ -6,40 +6,35 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import actors.Pinger;
 import actors.messages.AstLoginKey;
 import actors.messages.StarmapSubmission;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
+import akka.actor.Cancellable;
+import akka.actor.Props;
 import com.fasterxml.jackson.databind.JsonNode;
 import models.*;
-import org.apache.commons.io.FileUtils;
+import play.Logger;
 import play.Play;
 import play.data.DynamicForm;
 import play.data.Form;
 import play.libs.Akka;
 import play.libs.F;
-import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.Security;
+import play.mvc.*;
+import scala.concurrent.duration.Duration;
 import utils.AstrometryApiHelper;
 import utils.AwsS3Utils;
 import views.formdata.*;
 import views.html.*;
 
-import play.libs.WS;
-
 
 import javax.imageio.ImageIO;
-
-import static play.libs.F.Function;
-import static play.libs.F.Promise;
 
 
 /**
@@ -448,4 +443,30 @@ public class Application extends Controller {
       return redirect(routes.Application.index());
     }
   }
+
+  public static WebSocket<String> pingWs() {
+    return new WebSocket<String>() {
+      public void onReady(WebSocket.In<String> in, WebSocket.Out<String> out) {
+        final ActorRef pingActor = Akka.system().actorOf(Props.create(Pinger.class, in, out));
+        final Cancellable cancellable = Akka.system().scheduler().schedule(Duration.create(1, TimeUnit.SECONDS),
+                Duration.create(1, TimeUnit.SECONDS),
+                pingActor,
+                "Tick",
+                Akka.system().dispatcher(),
+                null
+        );
+
+        in.onClose(new F.Callback0() {
+          @Override
+          public void invoke() throws Throwable {
+            cancellable.cancel();
+            Logger.info("Cancelling WS actor.");
+          }
+        });
+      }
+
+    };
+  }
+
+
 }

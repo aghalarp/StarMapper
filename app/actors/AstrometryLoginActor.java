@@ -15,7 +15,7 @@ import scala.concurrent.Future;
 
 
 /**
- * Created by David on 7/6/15.
+ * Actor responsible for logging into Astrometry and returning session keys.
  */
 public class AstrometryLoginActor extends UntypedActor {
 

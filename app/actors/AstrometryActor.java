@@ -20,7 +20,7 @@ import scala.concurrent.Promise;
 import java.io.*;
 
 /**
- * Master actor to initiate all Astrometry submissions.
+ * Root actor for Astrometry submissions.
  */
 public class AstrometryActor extends UntypedActor {;
 

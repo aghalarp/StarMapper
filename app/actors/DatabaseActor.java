@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Actor responsible for all database interactions.
  */
 public class DatabaseActor extends UntypedActor {
 

@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
 import play.Logger;
 import play.Play;
+import play.mvc.WebSocket;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
 
@@ -151,11 +152,13 @@ public class AwsS3Utils {
         //final Upload upload = tm.upload(s3BucketName, filename, file);
         final Upload upload = tm.upload(s3BucketName, file.getName(), file);
 
+
         // Create and set anonymous ProgressListener
         upload.addProgressListener(new ProgressListener() {
             @Override
             public void progressChanged(ProgressEvent progressEvent) {
-                //System.out.print("\rS3 Upload Progress (" + file.getName() + "): " + upload.getProgress().getPercentTransferred() + "%");
+
+                //System.out.print("S3 Upload Progress (" + file.getName() + "): " + upload.getProgress().getPercentTransferred() + "%");
 
                 switch(progressEvent.getEventType()) {
                     case TRANSFER_COMPLETED_EVENT:

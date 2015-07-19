@@ -5,14 +5,13 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.dispatch.Mapper;
-import akka.dispatch.OnSuccess;
 import akka.pattern.Patterns;
 import play.Logger;
 import play.libs.Akka;
 import scala.concurrent.Future;
 
 /**
- * Created by David on 7/11/15.
+ * Starting root actor for all Starmap image submissions.
  */
 public class StarmapSubmissionActor extends UntypedActor {
 
@@ -57,7 +56,7 @@ public class StarmapSubmissionActor extends UntypedActor {
             // Note that the starMapId variable name is a bit misleading now, as it has been transformed to
             // an AwsUpload object at this point.
             Patterns.pipe(awsUploadMsg, Akka.system().dispatcher()).to(awsUploadActor);
-            
+
 
             // Create another Future, transforming the starMapId to AstSubmission, which we send as a message
             // to the Astrometry actor to get the submission process rolling.
