@@ -14,7 +14,9 @@
           <div class="panel-body" style="padding: 0px;">
             <canvas width='1' height='1' style="vertical-align: bottom;"></canvas>
             <img class="starmap-image" src="@starMap.getS3imageUrl" />
-            <a id="canvasPopover" tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-html="true" data-content="lorem ipsum content" data-original-title="<strong>Selected Star</strong>"></a>
+            <a id="canvasPopoverClick" tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-html="true" data-content="lorem ipsum content" data-original-title="<strong>Selected Star</strong>"></a>
+            <a id="canvasPopoverHover" tabindex="0" role="button" data-toggle="popover" data-trigger="manual" data-html="true" data-content="lorem ipsum content" data-original-title="<strong>Selected Star</strong>"></a>
+            <a id="canvasTooltip" data-toggle="tooltip" title="Some text"></a>
           </div>
         </div>
       </div>
@@ -25,11 +27,11 @@
             <h3 class="panel-title">Identified Stars and Objects</h3>
           </div>
 
-          <ul class="list-group">
+          <div class="list-group">
             @for(coord <- starMap.getCoordinates()) {
-              <li class="list-group-item">@coord.getStar().getName()</li>
+              <a href="#" id="@coord.getId" class="list-group-item">@coord.getStar().getName()</a>
             }
-          </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -85,7 +87,7 @@
           click: function() {
             // Dismiss popover when canvas background is clicked.
             // Data-trigger: focus doesn't work for dismissing popovers, so we do this instead.
-            $("#canvasPopover" ).popover({
+            $("#canvasPopoverClick" ).popover({
               placement:'left' // Fixes bug where popover defaults to right placement if user clicks background first.
             }).popover('hide');
           }
@@ -95,7 +97,8 @@
       drawBackground();
 
       // Function for drawing an arc
-      function arc (xPos, yPos, radius, starName, searchUrl) {
+      function arc (id, xPos, yPos, radius, starName, flatName, searchUrl) {
+
         if (radius == 0) {
           radius = 15;
         }
@@ -110,7 +113,7 @@
         $('canvas').drawEllipse({
           layer: true,
           index: layerIndex,
-          name: starName,
+          name: flatName, // Can't use numbers, originally wanted to use starId here.
           strokeStyle: '#6f9',
           strokeWidth: 3,
           x: xPos*xScale, y: yPos*yScale,
@@ -123,19 +126,56 @@
             distY = layer.y;
 
             //Then we change the Bootstrap popover span properties for the given star.
-            $("#canvasPopover").css({'position':'relative','top':distY,'left':distX})
+            $("#canvasPopoverClick").css({'position':'relative','top':distY,'left':distX})
               .attr("data-content", "<strong>Star Name: </strong><a href='" + searchUrl +"'>" + starName + "</a><br /><strong>Constellation:</strong> null<br /><strong>Apparent Magnitude:</strong> null<br /><strong>Distance:</strong> null<br /><strong>Wikipedia:</strong> <a href='#'>Link</a>")
               .attr("tabindex", "0")
               .popover({
                 placement:'left',
               }).popover('show');
+
+          },
+          mouseover: function(layer) {
+            // Change circle color to red.
+            $(this).setLayer(layer, {
+              strokeStyle: '#FF0000'
+            }).drawLayers();
+
+            // Highlight respective item on the list.
+            $("#" + id).addClass("list-hover");
+          },
+          mouseout: function(layer) {
+            // Restore circle color to green.
+            $(this).setLayer(layer, {
+              strokeStyle: '#6f9'
+            } ).drawLayers();
+
+            // Remove highlight from respective item on the list.
+            $("#" + id).removeClass("list-hover");
           }
         });
+
       }
 
       // Finally, draw circles for each identified star!
       @for(coord <- starMap.getCoordinates()) {
-        arc(@coord.getX(), @coord.getY(), @coord.getRadius(), "@coord.getStar().getName()", "@routes.Application.SearchStar(coord.getStar.getName)");
+        arc(@coord.getId, @coord.getX(), @coord.getY(), @coord.getRadius(), "@coord.getStar().getName()", "@coord.getStar().getFlatName()", "@routes.Application.SearchStar(coord.getStar.getName)");
+
+        // Clicking on identified stars list will trigger respective star pop-up.
+        $("#" + @coord.getId).click(function(e) {
+          e.preventDefault(); // Stops a href click from scrolling to top of page.
+          $('canvas' ).triggerLayerEvent("@coord.getStar.getFlatName", 'click');
+        });
+
+        // Hovering over list items will trigger respective star mouseover/mouseout events.
+        $("#" + @coord.getId).hover(
+          function() {
+            $('canvas' ).triggerLayerEvent("@coord.getStar.getFlatName", 'mouseover');
+          },
+          function() {
+            //$("#canvasPopoverHover" ).popover('hide');
+            $('canvas' ).triggerLayerEvent("@coord.getStar.getFlatName", 'mouseout');
+          }
+        );
       }
 
     }).each(function() {
@@ -143,11 +183,6 @@
         $(this).load();
       }
     });
-
-
-
-
-
 
 
 

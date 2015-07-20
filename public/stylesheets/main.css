@@ -30,3 +30,8 @@ body {
 .starmap-image {
   width: 100%;
 }
+
+/* Used in starmap page to trigger hover effect on the list when mousing over jCanvas elements */
+.list-hover {
+  background-color: #f5f5f5; /* Matches with default bootstrap hover color */
+}
