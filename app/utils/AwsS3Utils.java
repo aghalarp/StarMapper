@@ -17,9 +17,11 @@ import play.mvc.WebSocket;
 import scala.concurrent.Future;
 import scala.concurrent.Promise;
 
+import javax.imageio.ImageIO;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public class AwsS3Utils {
@@ -225,16 +227,21 @@ public class AwsS3Utils {
     public static File renameFile(File file, String newFileName) {
         // Get Path representation of File.
         Path path = file.toPath();
+        System.out.println(path);
+        Path newPath = Paths.get(newFileName);
+        System.out.println(newPath);
 
         // Check to see that the new file name has not already been set.
-        if (!path.getFileName().equals(newFileName)) {
+        if (!file.getName().equals(newFileName)) {
             try {
                 // Renaming is done via platform dependent move command.
                 // We opt for Files.move() rather than File.renameTo() because the former seems to be more reliable on
                 // different platforms.
                 // Note: Changed to copy() command so that we can hold on to original file.
-                Path newPath = Files.copy(path, path.resolveSibling(newFileName), StandardCopyOption.REPLACE_EXISTING);
+                newPath = Files.copy(path, newPath, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println(newPath);
                 File newFile = newPath.toFile();
+
                 newFile.deleteOnExit();
 
                 return newFile;
